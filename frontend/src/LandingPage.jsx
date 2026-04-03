@@ -42,8 +42,6 @@ const T = {
   grid:'rgba(91,163,201,0.03)', nodeCard:'rgba(10,16,28,0.96)',
 };
 
-// --- Framer Motion Components ---
-
 function StatNum({ target, suffix }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
@@ -108,7 +106,7 @@ export default function LandingPage({ onEnter, onAuthClick, user, onLogout }) {
     return () => clearInterval(id);
   }, []);
 
-  // Handle Scroll for Navbar (FIXED DEPRECATION)
+  // Handle Scroll for Navbar
   useMotionValueEvent(scrollY, "change", (latest) => {
     setNavScrolled(latest > 40);
   });
@@ -211,32 +209,25 @@ export default function LandingPage({ onEnter, onAuthClick, user, onLogout }) {
         <div style={{ position:'absolute', inset:0, backgroundImage:`linear-gradient(${T.grid} 1px,transparent 1px),linear-gradient(90deg,${T.grid} 1px,transparent 1px)`, backgroundSize:'64px 64px', maskImage:'radial-gradient(ellipse at center, black 20%, transparent 80%)', WebkitMaskImage:'radial-gradient(ellipse at center, black 20%, transparent 80%)' }} />
       </div>
 
-      {/* --- Floating Animated Navbar (FIXED LAG) --- */}
-      {/* --- Floating Animated Navbar (CHROME SCROLL LAG FIX) --- */}
-      <div style={{ position:'fixed', top:0, left:0, right:0, zIndex:100, display: 'flex', justifyContent: 'center', pointerEvents: 'none', padding: '16px 5vw' }}>
-      <motion.nav 
+      {/* --- Normal Sticky Navbar (Lag-Free) --- */}
+      <div style={{ position:'fixed', top:0, left:0, right:0, zIndex:100 }}>
+        <motion.nav 
           initial={false}
           animate={{
-            backgroundColor: navScrolled ? 'rgba(12,18,30,0.85)' : 'rgba(8,12,20,0)',
-            backdropFilter: navScrolled ? 'blur(24px)' : 'blur(0px)',
-            borderColor: navScrolled ? T.border : 'rgba(255,255,255,0)',
-            padding: navScrolled ? '12px 24px' : '16px 0px',
-            borderRadius: navScrolled ? '24px' : '0px',
-            boxShadow: navScrolled ? '0 20px 40px rgba(0,0,0,0.4)' : '0 0px 0px rgba(0,0,0,0)',
-            maxWidth: navScrolled ? '1000px' : '1200px',
+            backgroundColor: navScrolled ? 'rgba(12,18,30,0.9)' : 'rgba(8,12,20,0)',
+            backdropFilter: navScrolled ? 'blur(16px)' : 'blur(0px)',
+            borderBottomColor: navScrolled ? T.border : 'rgba(255,255,255,0)',
           }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }} 
+          transition={{ duration: 0.2 }} 
           style={{ 
-            display:'flex', 
-            alignItems:'center', 
-            justifyContent:'space-between', 
-            pointerEvents: 'auto',
-            width: '100%',
-            borderWidth: '1px',
-            borderStyle: 'solid',
-            // --- The magic sauce for Chrome ---
-            transform: 'translateZ(0)', // Forces GPU hardware acceleration
-            willChange: 'max-width, padding, background-color, backdrop-filter',
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            padding: '16px 5vw',
+            borderBottomWidth: '1px',
+            borderBottomStyle: 'solid',
+            transform: 'translateZ(0)', // Force GPU
+            willChange: 'background-color, backdrop-filter, border-bottom-color',
           }}
         >
           {/* Logo */}
@@ -338,7 +329,7 @@ export default function LandingPage({ onEnter, onAuthClick, user, onLogout }) {
               <div style={{ display:'inline-flex', alignItems:'center', gap:'10px', padding:'6px 16px 6px 8px', border:`1px solid rgba(79,168,130,0.3)`, borderRadius:'100px', background:`rgba(79,168,130,0.08)`, marginBottom:'32px' }}>
                 <div style={{ width:8, height:8, borderRadius:'50%', background:T.green, animation:'pulseGlow 2s infinite', margin:'0 4px' }} />
                 <span style={{ fontSize:'13px', fontFamily:"'Fira Code',monospace", color:T.green, fontWeight:600 }}>
-                  {user ? `Welcome back, ${user.name.split(' ')[0]}!` : 'ArchFlow v2.0 is live'}
+                  {user ? `Welcome back, ${user.name.split(' ')[0]}!` : 'No login required to start'}
                 </span>
               </div>
             </FadeIn>
