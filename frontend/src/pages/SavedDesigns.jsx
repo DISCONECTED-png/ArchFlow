@@ -1,24 +1,22 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { fetchMyDesigns, deleteDesign, fetchVersions } from '../services/api';
 
 const T = {
-  bg:'#080C14', panel:'#0B1020', border:'rgba(91,163,201,0.11)',
-  text:'#E4EBF5', textSub:'#8FA5BC', textMuted:'#5E7A96',
-  accent1:'#5BA3C9', accent2:'#8B7EC8', green:'#4FA882', red:'#C46060',
+  bg:'#080C14', panel:'rgba(12,18,32,0.95)', border:'rgba(91,163,201,0.15)',
+  text:'#E4EBF5', textSub:'#A0B4C8', textMuted:'#738A9F',
+  accent1:'#5BA3C9', accent2:'#8B7EC8', green:'#4FA882', red:'#E07A7A',
 };
 
 export default function SavedDesigns({ onLoadDesign, onClose }) {
-  const [designs,  setDesigns]  = useState([]);
-  const [loading,  setLoading]  = useState(true);
+  const [designs, setDesigns] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(null);
   const [versions, setVersions] = useState({});
   const [deleting, setDeleting] = useState(null);
 
   useEffect(() => {
-    fetchMyDesigns()
-      .then(res => setDesigns(res.data.designs))
-      .catch(err => console.error(err))
-      .finally(() => setLoading(false));
+    fetchMyDesigns().then(res => setDesigns(res.data.designs)).catch(console.error).finally(() => setLoading(false));
   }, []);
 
   const handleDelete = async (id) => {
@@ -27,11 +25,8 @@ export default function SavedDesigns({ onLoadDesign, onClose }) {
     try {
       await deleteDesign(id);
       setDesigns(d => d.filter(x => x._id !== id));
-    } catch (err) {
-      alert('Delete failed');
-    } finally {
-      setDeleting(null);
-    }
+    } catch (err) { alert('Delete failed'); } 
+    finally { setDeleting(null); }
   };
 
   const toggleVersions = async (id) => {
@@ -46,89 +41,79 @@ export default function SavedDesigns({ onLoadDesign, onClose }) {
   const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
 
   return (
-    <div style={{ position:'fixed', inset:0, zIndex:200, display:'flex', alignItems:'flex-start', justifyContent:'flex-end', background:'rgba(8,12,20,0.65)', backdropFilter:'blur(4px)', animation:'fadeIn 0.2s ease both' }}
-      onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} style={{ width:'min(480px,100vw)', height:'100vh', background:T.panel, borderLeft:`1px solid ${T.border}`, display:'flex', flexDirection:'column', animation:'slideRight 0.3s cubic-bezier(0.16,1,0.3,1) both', boxShadow:'-8px 0 40px rgba(0,0,0,0.4)' }}>
+    <div style={{ position:'fixed', inset:0, zIndex:300, display:'flex', justifyContent:'flex-end' }}>
+      {/* Backdrop */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.6)', backdropFilter:'blur(4px)' }} />
 
+      {/* Modal Panel */}
+      <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: "spring", damping: 25, stiffness: 200 }} 
+        style={{ width:'min(500px, 100vw)', height:'100vh', background:T.panel, backdropFilter:'blur(24px)', borderLeft:`1px solid ${T.border}`, display:'flex', flexDirection:'column', position:'relative', zIndex:301, boxShadow:'-20px 0 60px rgba(0,0,0,0.5)' }}>
+        
         {/* Header */}
-        <div style={{ padding:'20px 20px 16px', borderBottom:`1px solid ${T.border}`, display:'flex', justifyContent:'space-between', alignItems:'center', flexShrink:0 }}>
+        <div style={{ padding:'24px', borderBottom:`1px solid ${T.border}`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           <div>
-            <div style={{ fontSize:'16px', fontWeight:700, color:T.text, letterSpacing:'-0.01em' }}>Saved Designs</div>
-            <div style={{ fontSize:'12px', color:T.textMuted, marginTop:'2px', fontFamily:"'Fira Code',monospace" }}>{designs.length} total</div>
+            <div style={{ fontSize:'20px', fontWeight:800, color:T.text, fontFamily:"'Plus Jakarta Sans',sans-serif", letterSpacing:'-0.02em' }}>Saved Designs</div>
+            <div style={{ fontSize:'12px', color:T.textMuted, marginTop:'4px', fontFamily:"'Fira Code',monospace" }}>{designs.length} total projects</div>
           </div>
-          <button onClick={onClose} style={{ background:'none', border:'none', color:T.textMuted, fontSize:'18px', cursor:'pointer', opacity:0.6 }}
-            onMouseEnter={e => e.currentTarget.style.opacity='1'} onMouseLeave={e => e.currentTarget.style.opacity='0.6'}>✕</button>
+          <button onClick={onClose} style={{ background:'rgba(255,255,255,0.05)', border:`1px solid ${T.border}`, borderRadius:'8px', width:32, height:32, display:'flex', alignItems:'center', justifyContent:'center', color:T.text, cursor:'pointer' }}>✕</button>
         </div>
 
         {/* List */}
-        <div style={{ flex:1, overflowY:'auto', padding:'12px 16px' }}>
-          {loading && (
-            <div style={{ textAlign:'center', padding:'40px', color:T.textMuted, fontFamily:"'Fira Code',monospace", fontSize:'13px' }}>Loading...</div>
-          )}
+        <div style={{ flex:1, overflowY:'auto', padding:'20px' }}>
+          {loading && <div style={{ textAlign:'center', padding:'40px', color:T.accent1, fontFamily:"'Fira Code',monospace", fontSize:'14px' }}>Loading...</div>}
+          
           {!loading && designs.length === 0 && (
-            <div style={{ textAlign:'center', padding:'48px 20px' }}>
-              <div style={{ fontSize:'40px', marginBottom:'12px', opacity:0.3 }}>⬡</div>
-              <div style={{ color:T.textMuted, fontSize:'14px', fontWeight:600 }}>No saved designs yet</div>
-              <div style={{ color:T.textFaint || T.textMuted, fontSize:'12px', marginTop:'4px' }}>Generate a design while signed in to save it</div>
-            </div>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ textAlign:'center', padding:'60px 20px' }}>
+              <div style={{ fontSize:'64px', color:T.textMuted, opacity:0.3, marginBottom:'16px' }}>⬡</div>
+              <div style={{ color:T.text, fontSize:'16px', fontWeight:700, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>No saved designs yet</div>
+            </motion.div>
           )}
 
-          {designs.map(d => (
-            <div key={d._id} style={{ marginBottom:'8px' }}>
-              <div style={{ background: expanded === d._id ? 'rgba(91,163,201,0.06)' : 'rgba(12,18,30,0.6)', border:`1px solid ${expanded === d._id ? T.accent1+'30' : T.border}`, borderRadius:'12px', padding:'14px 16px', transition:'all 0.2s' }}>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:'10px' }}>
+          <AnimatePresence>
+            {designs.map((d, i) => (
+              <motion.div key={d._id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ delay: i * 0.05 }} 
+                style={{ marginBottom:'12px', background: expanded === d._id ? 'rgba(91,163,201,0.08)' : 'rgba(255,255,255,0.02)', border:`1px solid ${expanded === d._id ? T.accent1+'40' : T.border}`, borderRadius:'16px', padding:'20px', overflow:'hidden' }}>
+                
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:'16px' }}>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:'14px', fontWeight:600, color:T.text, marginBottom:'3px', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{d.title}</div>
-                    <div style={{ fontSize:'12px', color:T.textMuted, fontFamily:"'Fira Code',monospace", overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{d.prompt}</div>
-                    <div style={{ display:'flex', gap:'8px', marginTop:'6px', alignItems:'center' }}>
-                      <span style={{ fontSize:'11px', color:T.textMuted }}>{formatDate(d.createdAt)}</span>
-                      {d.isPublic && <span style={{ fontSize:'10px', background:`${T.green}15`, color:T.green, padding:'1px 7px', borderRadius:'4px', fontFamily:"'Fira Code',monospace" }}>shared</span>}
+                    <div style={{ fontSize:'16px', fontWeight:700, color:T.text, marginBottom:'4px', fontFamily:"'Plus Jakarta Sans',sans-serif", overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{d.title}</div>
+                    <div style={{ fontSize:'12px', color:T.textSub, fontFamily:"'Fira Code',monospace", overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{d.prompt}</div>
+                    <div style={{ display:'flex', gap:'12px', marginTop:'12px', alignItems:'center' }}>
+                      <span style={{ fontSize:'11px', color:T.textMuted, fontFamily:"'Fira Code',monospace" }}>{formatDate(d.createdAt)}</span>
+                      {d.isPublic && <span style={{ fontSize:'10px', background:`${T.green}20`, color:T.green, padding:'2px 8px', borderRadius:'6px', fontFamily:"'Fira Code',monospace", fontWeight:600 }}>Shared</span>}
                     </div>
                   </div>
 
-                  <div style={{ display:'flex', gap:'6px', flexShrink:0 }}>
-                    <button onClick={() => onLoadDesign(d._id)} style={{ padding:'6px 12px', borderRadius:'7px', border:`1px solid ${T.accent1}40`, background:`${T.accent1}10`, color:T.accent1, fontSize:'11px', fontWeight:600, cursor:'pointer', fontFamily:"'Fira Code',monospace", whiteSpace:'nowrap' }}>
-                      Load
-                    </button>
-                    <button onClick={() => toggleVersions(d._id)} style={{ padding:'6px 10px', borderRadius:'7px', border:`1px solid ${T.border}`, background:'transparent', color:T.textMuted, fontSize:'11px', cursor:'pointer', fontFamily:"'Fira Code',monospace" }}>
-                      {expanded === d._id ? '▲' : '▼'}
-                    </button>
-                    <button onClick={() => handleDelete(d._id)} disabled={deleting === d._id} style={{ padding:'6px 10px', borderRadius:'7px', border:`1px solid rgba(196,96,96,0.25)`, background:'transparent', color:T.red, fontSize:'11px', cursor:'pointer', opacity: deleting === d._id ? 0.5 : 1 }}>
-                      ✕
-                    </button>
+                  <div style={{ display:'flex', gap:'8px', flexShrink:0 }}>
+                    <motion.button whileHover={{ scale: 1.05 }} onClick={() => onLoadDesign(d._id)} style={{ padding:'8px 16px', borderRadius:'8px', border:`1px solid ${T.accent1}`, background:`${T.accent1}15`, color:T.accent1, fontSize:'12px', fontWeight:700, cursor:'pointer', fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Load</motion.button>
+                    <motion.button whileHover={{ backgroundColor: 'rgba(255,255,255,0.05)' }} onClick={() => toggleVersions(d._id)} style={{ padding:'8px 12px', borderRadius:'8px', border:`1px solid ${T.border}`, background:'transparent', color:T.text, fontSize:'12px', cursor:'pointer' }}>{expanded === d._id ? '▲' : '▼'}</motion.button>
+                    <motion.button whileHover={{ backgroundColor: `${T.red}15` }} onClick={() => handleDelete(d._id)} disabled={deleting === d._id} style={{ padding:'8px 12px', borderRadius:'8px', border:`1px solid ${T.red}40`, background:'transparent', color:T.red, fontSize:'12px', cursor:'pointer' }}>✕</motion.button>
                   </div>
                 </div>
 
-                {/* Versions dropdown */}
-                {expanded === d._id && versions[d._id] && (
-                  <div style={{ marginTop:'12px', borderTop:`1px solid ${T.border}`, paddingTop:'10px' }}>
-                    <div style={{ fontSize:'10px', color:T.accent1, fontFamily:"'Fira Code',monospace", textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:'7px' }}>Versions ({versions[d._id].length})</div>
-                    <div style={{ display:'flex', flexDirection:'column', gap:'5px' }}>
-                      {versions[d._id].map((v, i) => (
-                        <div key={v._id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 10px', background:'rgba(8,12,20,0.5)', borderRadius:'7px', border:`1px solid ${T.border}` }}>
-                          <div>
-                            <span style={{ fontSize:'11px', background:`${T.accent2}15`, color:T.accent2, padding:'1px 7px', borderRadius:'4px', fontFamily:"'Fira Code',monospace", marginRight:'8px' }}>v{v.version}</span>
-                            <span style={{ fontSize:'12px', color:T.textSub }}>{formatDate(v.createdAt)}</span>
+                <AnimatePresence>
+                  {expanded === d._id && versions[d._id] && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ marginTop:'16px', borderTop:`1px solid ${T.border}`, paddingTop:'16px' }}>
+                      <div style={{ fontSize:'10px', color:T.accent1, fontFamily:"'Fira Code',monospace", textTransform:'uppercase', letterSpacing:'0.15em', marginBottom:'12px', fontWeight:600 }}>Versions ({versions[d._id].length})</div>
+                      <div style={{ display:'flex', flexDirection:'column', gap:'8px' }}>
+                        {versions[d._id].map((v) => (
+                          <div key={v._id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 14px', background:'rgba(0,0,0,0.3)', borderRadius:'10px', border:`1px solid ${T.border}` }}>
+                            <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
+                              <span style={{ fontSize:'11px', background:`${T.accent2}20`, color:T.accent2, padding:'2px 8px', borderRadius:'6px', fontFamily:"'Fira Code',monospace", fontWeight:600 }}>v{v.version}</span>
+                              <span style={{ fontSize:'12px', color:T.textSub, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>{formatDate(v.createdAt)}</span>
+                            </div>
+                            <button onClick={() => onLoadDesign(v._id)} style={{ padding:'6px 12px', borderRadius:'6px', border:`1px solid ${T.accent1}40`, background:`${T.accent1}10`, color:T.accent1, fontSize:'12px', cursor:'pointer', fontWeight:600, fontFamily:"'Plus Jakarta Sans',sans-serif" }}>Load</button>
                           </div>
-                          <button onClick={() => onLoadDesign(v._id)} style={{ padding:'4px 10px', borderRadius:'6px', border:`1px solid ${T.accent1}30`, background:`${T.accent1}0A`, color:T.accent1, fontSize:'11px', cursor:'pointer', fontFamily:"'Fira Code',monospace" }}>
-                            Load
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
-      </div>
-      <style>{`
-        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-        @keyframes slideRight{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
-        ::-webkit-scrollbar{width:4px}
-        ::-webkit-scrollbar-thumb{background:rgba(91,163,201,0.18);border-radius:2px}
-      `}</style>
+      </motion.div>
     </div>
   );
 }
