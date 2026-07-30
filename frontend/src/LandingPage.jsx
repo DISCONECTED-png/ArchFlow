@@ -539,7 +539,7 @@ export default function LandingPage({ onEnter, onAuthClick, user, onLogout }) {
             {[
               { layer:'Frontend Environment', techs:['React 18', 'TypeScript', 'React Flow', 'Framer Motion'], color:T.accent1 },
               { layer:'Backend Services',  techs:['Node.js Environment', 'Express Server', 'MongoDB Atlas'], color:T.accent2 },
-              { layer:'Intelligence Layer', techs:['Cohere API', 'command-a-03-2025', 'Structured JSON Output'], color:'#C49A3C' },
+              { layer:'Intelligence Layer', techs:['Cohere API', 'command-a-plus-05-2026', 'Structured JSON Output'], color:'#C49A3C' },
             ].map((s,i) => (
               <motion.div key={i} whileHover={{ scale: 1.02 }} style={{ padding:'24px', background:'rgba(0,0,0,0.2)', borderRadius:'16px', border:`1px solid ${s.color}20` }}>
                 <div style={{ fontFamily:"'Fira Code',monospace", fontSize:'11px', color:s.color, letterSpacing:'0.15em', textTransform:'uppercase', marginBottom:'20px', display:'flex', alignItems:'center', gap:'8px', fontWeight:600 }}>

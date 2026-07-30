@@ -26,7 +26,7 @@ app.use(async (req, res, next) => {
     next();
   } catch (err) {
     console.error('Database connection error in request:', err.message);
-    next();
+    return res.status(500).json({ error: `Database connection failed: ${err.message}. Check MONGO_URI and MongoDB Atlas IP access.` });
   }
 });
 

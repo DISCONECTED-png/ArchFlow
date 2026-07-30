@@ -40,7 +40,11 @@ router.post('/generate', designLimiter, optionalAuth, async (req, res) => {
     });
   } catch (err) {
     console.error('Generate error:', err.message);
-    res.status(500).json({ error: err.message });
+    let errorMsg = err.message || 'Failed to generate design.';
+    if (errorMsg.includes('NO_VALID_RESPONSE_GENERATED') || errorMsg.includes('422')) {
+      errorMsg = 'The AI model could not generate a response for this prompt. Please try rephrasing your system prompt.';
+    }
+    res.status(500).json({ error: errorMsg });
   }
 });
 
@@ -149,7 +153,12 @@ router.post('/:id/regenerate', protect, designLimiter, async (req, res) => {
 
     res.json({ ...newDesign, estimate, savedId: saved._id });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Regenerate error:', err.message);
+    let errorMsg = err.message || 'Failed to regenerate design.';
+    if (errorMsg.includes('NO_VALID_RESPONSE_GENERATED') || errorMsg.includes('422')) {
+      errorMsg = 'The AI model could not generate a response for this prompt. Please try rephrasing your system prompt.';
+    }
+    res.status(500).json({ error: errorMsg });
   }
 });
 
